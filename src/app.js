@@ -1,3 +1,12 @@
+/**
+* This file defines the webhook that you registered using a POST request to the '/webhooks'
+* endpoint. The webhook is running locally, and receives POST requests from Evercloud
+* on the specified port whenever a sensor reading is received. 
+* 
+* The port is specified in the 'docker-compose.yml' configuration file, and is 3001 by default.\
+* Communications go through the secure connection you established using localtunnel or ngrok.
+*/
+
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 
@@ -13,18 +22,16 @@ const port = process.env.PORT || 3000;
 const values = [];
 
 /**
- * GET /health
- * 
- * Use to determine if the webhook server is up and running.
+ * Handler for 'GET webhooks/health' requests from Evercloud.
+ * Returns a success response if the webhook server is up and running.
  */
 app.get('/health', async (req, res) => {
     res.send();
 })
 
 /**
- * GET /
- * 
- * Return an array the last ten messages received via the POST / endpoint.
+ * Handler for 'GET webhooks' requests from Evercloud.
+ * Returns an array the last ten messages received via the POST / endpoint.
  */
 app.get('/', async (req, res) => {
     const reqSecret = req.header('x-api-key');
@@ -36,9 +43,8 @@ app.get('/', async (req, res) => {
 })
 
 /**
- * POST /
- * 
- * Store the body in the values array.
+ * Handler for 'POST .../webhooks' requests from Evercloud.
+ * Stores the body containing reported readings in an array.
  */
 app.post('/', async (req, res) => {
     const reqSecret = req.header('x-api-key');
@@ -57,6 +63,9 @@ app.post('/', async (req, res) => {
     res.sendStatus(200);
 })
 
+/**
+ * Begins listening for event notifications on the assigned port.
+ */
 app.listen(port, () => {
     console.log(`listening on port ${port}, api-secret: ${secret}`);
 })
